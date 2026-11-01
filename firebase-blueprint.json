@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Consultation booking request and reservation records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "patientName": { "type": "string", "maxLength": 100 },
+        "patientPhone": { "type": "string", "maxLength": 20 },
+        "patientEmail": { "type": "string", "maxLength": 120 },
+        "age": { "type": "number" },
+        "gender": { "type": "string", "enum": ["female", "male", "other"] },
+        "chiefComplaint": { "type": "string", "maxLength": 2000 },
+        "category": { "type": "string", "enum": ["hormonal_balance", "thyroid_care", "joint_wellness", "hair_fall", "general_wellness"] },
+        "appointmentDate": { "type": "string", "maxLength": 20 },
+        "timeSlot": { "type": "string", "maxLength": 30 },
+        "consultationType": { "type": "string", "enum": ["new", "followup"] },
+        "mode": { "type": "string", "enum": ["video", "voice"] },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "rescheduled", "cancelled", "completed"] },
+        "paymentStatus": { "type": "string", "enum": ["unpaid", "verified", "waived"] },
+        "amount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["gateway_instant", "upi_direct", "pay_after_review"] },
+        "transactionId": { "type": "string", "maxLength": 100 },
+        "utrNumber": { "type": "string", "maxLength": 50 },
+        "triageScore": { "type": "number" },
+        "triageSummary": { "type": "string", "maxLength": 3000 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["patientName", "patientPhone", "appointmentDate", "timeSlot", "category", "status", "createdAt"]
+    },
+    "PatientProfile": {
+      "title": "PatientProfile",
+      "description": "Patient demographic and health summary",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 20 },
+        "city": { "type": "string", "maxLength": 80 },
+        "state": { "type": "string", "maxLength": 80 },
+        "medicalHistorySummary": { "type": "string", "maxLength": 2000 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "fullName", "email", "createdAt"]
+    },
+    "HealthRecord": {
+      "title": "HealthRecord",
+      "description": "Uploaded lab report, diagnostic summary, or prescription note",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "patientId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 150 },
+        "recordType": { "type": "string", "enum": ["lab_report", "prescription", "imaging", "doctor_note"] },
+        "date": { "type": "string", "maxLength": 30 },
+        "fileData": { "type": "string", "maxLength": 500000 },
+        "fileName": { "type": "string", "maxLength": 200 },
+        "fileType": { "type": "string", "maxLength": 100 },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["patientId", "title", "recordType", "createdAt"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "Health education article curated by Dr. Harshika",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "slug": { "type": "string", "maxLength": 200 },
+        "category": { "type": "string", "enum": ["thyroid", "hormonal_pcos", "menstrual", "joint_pain", "hair_wellness", "preventive"] },
+        "summary": { "type": "string", "maxLength": 500 },
+        "content": { "type": "string", "maxLength": 20000 },
+        "readTime": { "type": "string", "maxLength": 30 },
+        "isPublished": { "type": "boolean" },
+        "author": { "type": "string", "maxLength": 100 },
+        "publishedAt": { "type": "string", "maxLength": 30 }
+      },
+      "required": ["title", "category", "summary", "content", "isPublished", "publishedAt"]
+    },
+    "ClinicSettings": {
+      "title": "ClinicSettings",
+      "description": "Consultation fees, available booking days, and clinic notification preferences",
+      "type": "object",
+      "properties": {
+        "consultationFee": { "type": "number" },
+        "followupFee": { "type": "number" },
+        "upiId": { "type": "string", "maxLength": 100 },
+        "clinicPhone": { "type": "string", "maxLength": 30 },
+        "clinicEmail": { "type": "string", "maxLength": 120 },
+        "daysActive": { "type": "string", "maxLength": 200 },
+        "bookingEnabled": { "type": "boolean" },
+        "announcement": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["consultationFee", "upiId", "clinicPhone", "bookingEnabled"]
+    }
+  },
+  "firestore": {
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Consultation booking requests and appointments"
+    },
+    "/patients/{userId}": {
+      "schema": "PatientProfile",
+      "description": "Patient user profile and contact details"
+    },
+    "/health_records/{recordId}": {
+      "schema": "HealthRecord",
+      "description": "Patient diagnostic reports and prescriptions"
+    },
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Health education library articles"
+    },
+    "/clinic_settings/general": {
+      "schema": "ClinicSettings",
+      "description": "Doctor clinic configuration, fees and timing"
+    }
+  }
+}

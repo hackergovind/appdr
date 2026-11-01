@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unknown collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'harshikasingh631999@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidAppointment(data) {
+      return data.patientName is string && data.patientName.size() >= 2 && data.patientName.size() <= 100 &&
+             data.patientPhone is string && data.patientPhone.size() >= 6 && data.patientPhone.size() <= 20 &&
+             data.appointmentDate is string && data.appointmentDate.size() >= 8 && data.appointmentDate.size() <= 20 &&
+             data.timeSlot is string && data.timeSlot.size() >= 2 && data.timeSlot.size() <= 30 &&
+             data.category is string && data.category.size() <= 40 &&
+             data.status in ['pending', 'confirmed', 'rescheduled', 'cancelled', 'completed'];
+    }
+
+    function isValidPatientProfile(data) {
+      return data.fullName is string && data.fullName.size() >= 2 && data.fullName.size() <= 100 &&
+             data.email is string && data.email.size() >= 5 && data.email.size() <= 120 &&
+             data.userId is string && data.userId.size() <= 128;
+    }
+
+    function isValidHealthRecord(data) {
+      return data.title is string && data.title.size() >= 2 && data.title.size() <= 150 &&
+             data.patientId is string && data.patientId.size() <= 128 &&
+             data.recordType in ['lab_report', 'prescription', 'imaging', 'doctor_note'];
+    }
+
+    function isValidArticle(data) {
+      return data.title is string && data.title.size() >= 2 && data.title.size() <= 200 &&
+             data.category is string && data.category.size() <= 50 &&
+             data.summary is string && data.summary.size() <= 1000 &&
+             data.content is string && data.content.size() <= 50000 &&
+             data.isPublished is bool;
+    }
+
+    function isValidClinicSettings(data) {
+      return data.consultationFee is number && data.consultationFee >= 0 &&
+             data.bookingEnabled is bool &&
+             data.clinicPhone is string && data.clinicPhone.size() <= 30;
+    }
+
+    // 1. Appointments Collection
+    match /appointments/{appointmentId} {
+      allow get: if isValidId(appointmentId) && (isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid));
+      allow list: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow create: if isValidId(appointmentId) && isValidAppointment(incoming());
+      allow update: if isValidId(appointmentId) && (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid &&
+         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt', 'notes', 'chiefComplaint', 'paymentStatus', 'utrNumber', 'paymentMethod', 'transactionId']))
+      );
+      allow delete: if isValidId(appointmentId) && isAdmin();
+    }
+
+    // 2. Patient Profiles (Isolated PII)
+    match /patients/{userId} {
+      allow get: if isValidId(userId) && (isAdmin() || (isSignedIn() && request.auth.uid == userId));
+      allow list: if isAdmin();
+      allow create: if isValidId(userId) && (
+        isAdmin() || (isSignedIn() && request.auth.uid == userId && incoming().userId == userId && isValidPatientProfile(incoming()))
+      );
+      allow update: if isValidId(userId) && (
+        isAdmin() || (isSignedIn() && request.auth.uid == userId && incoming().userId == userId && isValidPatientProfile(incoming()))
+      );
+      allow delete: if isValidId(userId) && isAdmin();
+    }
+
+    // 3. Patient Health Records
+    match /health_records/{recordId} {
+      allow get: if isValidId(recordId) && (isAdmin() || (isSignedIn() && resource.data.patientId == request.auth.uid));
+      allow list: if isAdmin() || (isSignedIn() && resource.data.patientId == request.auth.uid);
+      allow create: if isValidId(recordId) && isSignedIn() && isValidHealthRecord(incoming()) && (
+        isAdmin() || incoming().patientId == request.auth.uid
+      );
+      allow update: if isValidId(recordId) && isSignedIn() && isValidHealthRecord(incoming()) && (
+        isAdmin() || resource.data.patientId == request.auth.uid
+      );
+      allow delete: if isValidId(recordId) && isSignedIn() && (
+        isAdmin() || resource.data.patientId == request.auth.uid
+      );
+    }
+
+    // 4. Educational Articles (Public Read, Admin Write)
+    match /articles/{articleId} {
+      allow get: if isValidId(articleId);
+      allow list: if true;
+      allow create: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
+      allow update: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
+      allow delete: if isValidId(articleId) && isAdmin();
+    }
+
+    // 5. Clinic Settings
+    match /clinic_settings/{settingId} {
+      allow get, list: if true;
+      allow create, update: if isValidId(settingId) && isAdmin() && isValidClinicSettings(incoming());
+      allow delete: if isValidId(settingId) && isAdmin();
+    }
+
+    // 6. Admin Roles Collection
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

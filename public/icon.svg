@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#163932" />
+      <stop offset="100%" stop-color="#0E2722" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EED596" />
+      <stop offset="50%" stop-color="#D4AF37" />
+      <stop offset="100%" stop-color="#A28020" />
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6FA880" />
+      <stop offset="100%" stop-color="#427855" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+  <circle cx="256" cy="256" r="210" fill="none" stroke="url(#gold)" stroke-width="3" stroke-dasharray="6,4" opacity="0.6"/>
+  <circle cx="256" cy="256" r="196" fill="none" stroke="#235246" stroke-width="2" />
+  
+  <!-- Botanical Leaves forming a healing crest -->
+  <path d="M 256 110 C 230 160 210 205 210 256 C 210 290 230 320 256 340 C 282 320 302 290 302 256 C 302 205 282 160 256 110 Z" fill="url(#leafGrad)" opacity="0.9"/>
+  <path d="M 256 110 L 256 340" stroke="#EED596" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+  
+  <!-- Left Leaf Curve -->
+  <path d="M 240 210 C 180 190 150 240 180 280 C 200 270 230 250 240 210 Z" fill="#588E68" opacity="0.85"/>
+  <!-- Right Leaf Curve -->
+  <path d="M 272 210 C 332 190 362 240 332 280 C 312 270 282 250 272 210 Z" fill="#588E68" opacity="0.85"/>
+  
+  <!-- Central Emblem / Cross & Wellness Core -->
+  <circle cx="256" cy="256" r="48" fill="#163932" stroke="url(#gold)" stroke-width="3"/>
+  <path d="M 256 226 L 256 286 M 226 256 L 286 256" stroke="url(#gold)" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Typography inside Icon -->
+  <text x="256" y="390" font-family="'Cinzel', 'Playfair Display', Georgia, serif" font-size="28" font-weight="700" fill="#F4E8C1" text-anchor="middle" letter-spacing="4">DR. HARSHIKA</text>
+  <text x="256" y="420" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#9CB8A7" text-anchor="middle" letter-spacing="5">WELLNESS &amp; HOMOEOPATHY</text>
+</svg>
