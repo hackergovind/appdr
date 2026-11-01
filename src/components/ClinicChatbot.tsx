@@ -4,6 +4,7 @@ import {
   ArrowRight, Phone, RefreshCw, User, Bot, CheckCircle2 
 } from 'lucide-react';
 import { DOCTOR_PROFILE } from '../data/defaultData';
+import { getClinicalFallbackResponse } from '../utils/clinicalAssistant';
 
 interface ChatMessage {
   id: string;
@@ -88,17 +89,17 @@ export const ClinicChatbot: React.FC<ClinicChatbotProps> = ({
       const botMsg: ChatMessage = {
         id: `bot_${Date.now()}`,
         role: 'assistant',
-        content: data.reply || "Thank you for asking. You can book an online consultation with Dr. Harshika or connect directly on WhatsApp (+91 80102 81579).",
+        content: data.reply || getClinicalFallbackResponse(text),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
       setMessages(prev => [...prev, botMsg]);
     } catch (err) {
-      console.error('Chatbot error:', err);
+      console.warn('Chatbot fetch encountered issue, using instant clinical knowledge engine:', err);
       const fallbackMsg: ChatMessage = {
-        id: `err_${Date.now()}`,
+        id: `bot_${Date.now()}`,
         role: 'assistant',
-        content: `I apologize, our online assistant is experiencing a brief connectivity delay. You can connect directly with Dr. Harshika Singh's clinic desk on WhatsApp (+91 80102 81579) or proceed with online appointment booking.`,
+        content: getClinicalFallbackResponse(text),
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages(prev => [...prev, fallbackMsg]);
